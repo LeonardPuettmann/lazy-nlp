@@ -1,0 +1,1 @@
+from lazy_nlp.nlp import LazyNLP
