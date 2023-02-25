@@ -6,7 +6,8 @@ This library is for :
 - ✅ lazy people
 - ✅ fast prototyping or quick experiments
 - ❌ super accurate results 
-- ❌ production-type models
+- ❌ production-grade models
+- ❌ every use-case 
 
 ## What you need 
 
@@ -15,7 +16,7 @@ To use this library, all you need to do is:
 - Have a second list containing all the possible labels you want to assign
 - (When using from GitHub)`pip install -r requirements.txt`
 
-## Quickstarts
+## Quickstart
 
 First, install LazyNLP with `pip install lazy-nlp`. 
 
@@ -39,7 +40,7 @@ lnlp = LazyNLP()
 model, encoder = lnlp.run(sentences, labels)
 ```
 ### Save a model
-The result of `run` will be a `pytorch` model and a labelencoder. You can save these by using `lnlp.save(model, encoder)`
+The result of `.run` will be a `pytorch` model and a labelencoder. You can save these by using `lnlp.save(model, encoder)`
 
 ### Using the model
 After you saved the model and encoder, you can simply predict on new data like this: 
@@ -50,7 +51,7 @@ preds = lnlp.predict(["This is a new sentence"])
 
 ## LazyNLP steps
 
-LazyNLP consists of three steps: zeroshot label creating, embedding and model training. With `.run` you trigger all of these steps at once, but you can also use LazyNLP only for the zeroshot, embedding or model training component idividually. 
+LazyNLP consists of three steps: zeroshot labeling, embedding and model training. With `.run` you trigger all of these steps at once, but you can also use LazyNLP only for the zeroshot, embedding or model training component idividually. 
 
 ### Zeroshot
 
@@ -62,7 +63,6 @@ your_labels = ["negative", "neutral", "positive"]
 # returns a list of zeroshot labels
 zeroshot_labels = lnlp.zeroshot(your_texts, your_labels)
 ```
-
 
 ### Embedding
 

@@ -29,10 +29,10 @@ class LazyNLP:
         zeroshot_labels = []
         for sent in tqdm(sentences):
             # Tokenize the sentence and the labels
-            inputs = tokenizer.batch_encode_plus([sent] + label_list, return_tensors="pt", padding=True)
+            inputs = tokenizer.batch_encode_plus([sent[:512]] + label_list, return_tensors="pt", padding=True)
             
             # Get the sentence and the attention mask from the inputs
-            input_ids = inputs["input_ids"]
+            input_ids = inputs["input_ids"][:512]
             attention_mask = inputs["attention_mask"]
 
             # Pass the ids and the mask through the model
@@ -126,31 +126,32 @@ class LazyNLP:
             # Load encoder
             with open(f"{cwd}/encoder.pkl", "rb") as handle:
                 encoder = pickle.load(handle)
-
-            # embed new sentences
-            new_embeddings = self.embed(sentences)
-
-            # Convert emebddings to tensor
-            tensor_embeddings =  torch.FloatTensor(new_embeddings)
-
-            predictions = []
-            for i in range(len(sentences)):
-                # Create prediction of the model
-                y_hat = model(tensor_embeddings[i])
-
-                # Convert to numpy
-                y_hat_numpy = [loss.detach().numpy() for loss in y_hat]
-
-                # Get the argmax of the prediction
-                y_hat_argmax = np.argmax(y_hat_numpy)
-
-                # Decode the labels
-                y_hat_decoded = encoder.inverse_transform(y_hat_argmax.ravel()) # .reshape(-1, 1)
-
-                predictions.append(str(y_hat_decoded[0]))
-            return predictions
         except:
             print("Model not found. Please save a trained a model first.")
+
+        # embed new sentences
+        new_embeddings = self.embed(sentences)
+
+        # Convert emebddings to tensor
+        tensor_embeddings =  torch.FloatTensor(new_embeddings)
+
+        predictions = []
+        for i in range(len(sentences)):
+            # Create prediction of the model
+            y_hat = model(tensor_embeddings[i])
+
+            # Convert to numpy
+            y_hat_numpy = [loss.detach().numpy() for loss in y_hat]
+
+            # Get the argmax of the prediction
+            y_hat_argmax = np.argmax(y_hat_numpy)
+
+            # Decode the labels
+            y_hat_decoded = encoder.inverse_transform(y_hat_argmax.ravel()) # .reshape(-1, 1)
+
+            predictions.append(str(y_hat_decoded[0]))
+        return predictions
+        
 
     def run(self, sentences, labels):
         # Get the zeroshot labels
