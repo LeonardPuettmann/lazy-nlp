@@ -5,7 +5,7 @@ This library allows you to label data using zeroshot and train simple classifier
 This library is for : 
 - ✅ lazy people
 - ✅ fast prototyping or quick experiments
-- ❌ accurate results 
+- ❌ super accurate results 
 - ❌ production-type models
 
 ## What you need 
@@ -35,10 +35,17 @@ labels = ["positive", "neutral", "negative"]
 
 # LazyNLP will handle the rest for you
 lnlp = LazyNLP()
-run = lnlp.run(sentences, labels)
+model, encoder = lnlp.run(sentences, labels)
 ```
 ### Save a model
-The result of `run` will be a `pytorch` model. You can save the model by using `run.save(model)`
+The result of `run` will be a `pytorch` model and a labelencoder. You can save these by using `lnlp.save(model, encoder)`
+
+### Using the model
+After you saved the model and encoder, you can simply predict on new data like this: 
+```python
+# pass a list to .predict with a list of new data. You need to .save the model and encoder before!
+preds = lnlp.predict(["This is a new sentence"])
+```
 
 ## LazyNLP steps
 
