@@ -13,7 +13,7 @@ This library is for :
 To use this library, all you need to do is: 
 - Have a list containing texts
 - Have a second list containing all the possible labels you want to assign
-- `pip install -r requirements.txt`
+- (When using from GitHub)`pip install -r requirements.txt`
 
 ## Quickstarts
 
