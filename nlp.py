@@ -17,6 +17,8 @@ import sys
 
 import numpy as np
 
+import os
+
 class LazyNLP:
     def zeroshot(self, sentences, label_list):
         # Load sentence bert both as the toekenizer and the model
@@ -94,7 +96,7 @@ class LazyNLP:
         # Training loop of the model
         losses = []
         num_epochs = int(round(len(zeroshot_labels) / 2))
-        for epoch in tqdm(range(num_epochs)):
+        for epoch in range(num_epochs):
 
             # Create prediction of the model
             y_hat = model(tensor_embeddings)
@@ -107,53 +109,48 @@ class LazyNLP:
             model.zero_grad()
             loss.backward()
 
-            sys.stdout.write(f'\rLoss of {round(float(loss), 3)}')
+            sys.stdout.write(f"\rLoss of {round(float(loss), 3)} at epoch {epoch}")
             sys.stdout.flush()
 
             optimizer.step()
 
-        try:
-            # Save model
-            torch.save(model, "ml/model.pt")
-
-            # Save encoder
-            with open("ml/encoder.pkl", "wb") as handle:
-                pickle.dump(encoder, handle)
-
-        except:
-            pass
-
-        print("- - - - - - - -")
-        print("Done!")
-        return model
+        return model, encoder
 
     def predict(self, sentences):
-        # Load model
-        model = torch.load("ml/model.pt")
+        try:
+            cwd = os.getcwd()
 
-        # Load encoder
-        with open("ml/encoder.pkl", "rb") as handle:
-            encoder = pickle.load(handle)
+            # Load model
+            model = torch.load(f"{cwd}/model.pt")
 
-        # embed new sentences
-        new_embeddings = self.embed(sentences)
+            # Load encoder
+            with open(f"{cwd}/encoder.pkl", "rb") as handle:
+                encoder = pickle.load(handle)
 
-        # Convert emebddings to tensor
-        tensor_embeddings =  torch.FloatTensor(new_embeddings)
+            # embed new sentences
+            new_embeddings = self.embed(sentences)
 
-        # Create prediction of the model
-        y_hat = model(tensor_embeddings)
+            # Convert emebddings to tensor
+            tensor_embeddings =  torch.FloatTensor(new_embeddings)
 
-        # Convert to numpy
-        y_hat_numpy = [loss.detach().numpy() for loss in y_hat]
+            predictions = []
+            for i in range(len(sentences)):
+                # Create prediction of the model
+                y_hat = model(tensor_embeddings[i])
 
-        # Get the argmax of the prediction
-        y_hat_argmax = np.argmax(y_hat_numpy)
+                # Convert to numpy
+                y_hat_numpy = [loss.detach().numpy() for loss in y_hat]
 
-        # Decode the labels
-        y_hat_decoded = encoder.inverse_transform(y_hat_argmax.ravel()) # .reshape(-1, 1)
+                # Get the argmax of the prediction
+                y_hat_argmax = np.argmax(y_hat_numpy)
 
-        return str(y_hat_decoded[0])
+                # Decode the labels
+                y_hat_decoded = encoder.inverse_transform(y_hat_argmax.ravel()) # .reshape(-1, 1)
+
+                predictions.append(str(y_hat_decoded[0]))
+            return predictions
+        except:
+            print("Model not found. Please save a trained a model first.")
 
     def run(self, sentences, labels):
         # Get the zeroshot labels
@@ -163,9 +160,19 @@ class LazyNLP:
         embeddings = self.embed(sentences)
 
         # Train the model
-        model = self.classify(embeddings, zeroshot_labels)
+        model, encoder = self.classify(embeddings, zeroshot_labels)
 
-        return model
+        return model, encoder
+
+    def save(self, model, encoder=None):
+        
+        cwd = os.getcwd()
+        torch.save(model, f"{cwd}/model.pt")
+
+        if encoder:
+            with open(f"{cwd}/encoder.pkl", "wb") as handle:
+                pickle.dump(encoder, handle)
+     
 
 
 
